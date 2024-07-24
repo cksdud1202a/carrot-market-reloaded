@@ -21,7 +21,7 @@ const formSchema = z
       .string()
       .min(10, { message: "비밀번호 확인은 최소 10자 이상이어야 합니다." })
       .regex(/^(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+{}|:"<>?~`]).{10,}$/, {
-        message: "비밀번호는 숫자, 알파벳, 특수 문자를 모두 포함해야 합니다.",
+        message: "비밀번호는 숫자, 영어, 특수 문자를 모두 포함해야 합니다.",
       }),
   })
   .refine((data) => data.password === data.confirm_password, {
