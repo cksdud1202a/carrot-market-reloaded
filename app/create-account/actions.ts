@@ -1,6 +1,16 @@
 "use server";
-import { PASSWORD_MIN_LENGTH, PASSWORD_REGEX } from "@/lib/constants";
+import bcrypt from "bcrypt";
+import {
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_REGEX,
+  PASSWORD_REGEX_ERROR,
+} from "@/lib/constants";
+import db from "@/lib/db";
 import { z } from "zod";
+import { redirect } from "next/navigation";
+import getSession from "@/lib/session";
+
+const checkUsername = (username: string) => !username.includes("potato");
 
 const checkPasswords = ({
   password,
@@ -9,38 +19,65 @@ const checkPasswords = ({
   password: string;
   confirm_password: string;
 }) => password === confirm_password;
+
 const formSchema = z
   .object({
     username: z
-      .string()
+      .string({
+        invalid_type_error: "Username must be a string!",
+        required_error: "Where is my username???",
+      })
+      .toLowerCase()
       .trim()
-      .regex(/^[a-zA-Z가-힣]+$/, {
-        message: "사용자 이름은 한글과 영어만 포함할 수 있습니다.",
-      }),
-    email: z
-      .string()
-      .email({ message: "유효한 이메일 주소를 입력해 주세요." })
-      .trim(),
-    password: z
-      .string()
-      .min(PASSWORD_MIN_LENGTH, "비밀번호 확인은 최소 4자 이상이어야 합니다.")
-      .trim()
-      .regex(
-        PASSWORD_REGEX,
-        "비밀번호는 숫자, 영어, 특수 문자를 모두 포함해야 합니다."
-      ),
-    confirm_password: z
-      .string()
-      .min(PASSWORD_MIN_LENGTH, "비밀번호 확인은 최소 4자 이상이어야 합니다.")
-      .trim()
-      .regex(
-        PASSWORD_REGEX,
-        "비밀번호는 숫자, 영어, 특수 문자를 모두 포함해야 합니다."
-      ),
+      // .transform((username) => `🔥 ${username} 🔥`)
+      .refine(checkUsername, "No potatoes allowed!"),
+    email: z.string().email().toLowerCase(),
+    password: z.string().min(PASSWORD_MIN_LENGTH),
+    //.regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
+    confirm_password: z.string().min(PASSWORD_MIN_LENGTH),
+  })
+
+  .superRefine(async ({ username }, ctx) => {
+    const user = await db.uSER.findUnique({
+      where: {
+        username,
+      },
+      select: {
+        id: true,
+      },
+    });
+    if (user) {
+      ctx.addIssue({
+        code: "custom",
+        message: "This is username is already taken",
+        path: ["username"],
+        fatal: true,
+      });
+      return z.NEVER; //fatal Issue를 만들고 NEVER를 리턴하면 뒤에 다른 refine이 있어도 그것들은 실행되지 않는다
+    }
+  })
+  .superRefine(async ({ email }, ctx) => {
+    const user = await db.uSER.findUnique({
+      where: {
+        email,
+      },
+      select: {
+        id: true,
+      },
+    });
+    if (user) {
+      ctx.addIssue({
+        code: "custom",
+        message: "This is email is already taken",
+        path: ["email"],
+        fatal: true,
+      });
+      return z.NEVER; //fatal Issue를 만들고 NEVER를 리턴하면 뒤에 다른 refine이 있어도 그것들은 실행되지 않는다
+    }
   })
   .refine(checkPasswords, {
-    message: "비밀번호와 확인 비밀번호가 일치해야 합니다.",
-    path: ["confirm_password"], // 오류 메시지를 'confirm_password' 필드에만 표시
+    message: "Both passwords should be the same!",
+    path: ["confirm_password"],
   });
 
 export async function createAccount(prevState: any, formData: FormData) {
@@ -50,8 +87,24 @@ export async function createAccount(prevState: any, formData: FormData) {
     password: formData.get("password"),
     confirm_password: formData.get("confirm_password"),
   };
-  const result = formSchema.safeParse(data);
+  const result = await formSchema.spa(data);
   if (!result.success) {
     return result.error.flatten();
+  } else {
+    const hashedPassword = await bcrypt.hash(result.data.password, 12);
+    const user = await db.uSER.create({
+      data: {
+        username: result.data.username,
+        email: result.data.email,
+        password: hashedPassword,
+      },
+      select: {
+        id: true,
+      },
+    });
+    const session = await getSession();
+    session.id = user.id;
+    await session.save();
+    redirect("/profile");
   }
 }
