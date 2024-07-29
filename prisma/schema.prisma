@@ -19,6 +19,7 @@ model USER {
   created_at DateTime   @default(now())
   updated_at DateTime   @updatedAt
   SMSToken   SMSToken[]
+  Product    Product[]
 }
 
 model SMSToken {
@@ -32,4 +33,16 @@ model SMSToken {
   //대신 USER를 ?(optional)로 만들어야함
   //Restrict: 부모 레코드가 참조되고 있는 동안은 삭제되는 걸 막음, SMSToken이 사용자와 연결되어 있으면 사용자를 못지움
   userId     Int //SetNull 사용시 같이 ?(optional)로 만들어 줘야함
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  title       String
+  price       Float
+  description String
+  photo       String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  user        USER     @relation(fields: [userId], references: [id])
+  userId      Int
 }
