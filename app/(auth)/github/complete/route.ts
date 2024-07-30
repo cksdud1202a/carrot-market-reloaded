@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     },
   });
   const { id, avatar_url, login } = await userProfileResponse.json();
-  const user = await db.uSER.findUnique({
+  const user = await db.user.findUnique({
     where: {
       github_id: id + "",
     },
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     await session.save();
     return redirect("/profile");
   }
-  const newUser = await db.uSER.create({
+  const newUser = await db.user.create({
     data: {
       username: login,
       github_id: id + "",

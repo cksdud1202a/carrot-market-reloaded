@@ -13,7 +13,7 @@ import { redirect } from "next/navigation";
 import { error } from "console";
 
 const checkEmailExists = async (email: string) => {
-  const user = await db.uSER.findUnique({
+  const user = await db.user.findUnique({
     where: {
       email,
     },
@@ -51,7 +51,7 @@ export async function logIn(prevState: any, formData: FormData) {
   if (!result.success) {
     return result.error.flatten();
   } else {
-    const user = await db.uSER.findUnique({
+    const user = await db.user.findUnique({
       where: {
         email: result.data.email,
       },

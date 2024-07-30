@@ -5,7 +5,7 @@ import { notFound, redirect } from "next/navigation";
 async function getUser() {
   const session = await getSession();
   if (session.id) {
-    const user = await db.uSER.findUnique({
+    const user = await db.user.findUnique({
       where: {
         id: session.id,
       },

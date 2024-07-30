@@ -3,12 +3,11 @@ generator client {
 }
 
 datasource db {
-  //provider = "postgresql"
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-model USER {
+model User {
   id         Int        @id @default(autoincrement())
   username   String     @unique
   email      String?    @unique
@@ -27,22 +26,19 @@ model SMSToken {
   token      String   @unique
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  user       USER     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  //Cascade: 사용자 삭제시 사용자랑 연결된 모든 SMSToken들도 같이 지워짐, 즉 부모인 USER 삭제시 SMSToken도 삭제
-  //SetNull: Cascade는 부모 삭제시 자식 SMSToken을 삭제하지 않고 부모인 USER를 null로 설정해둠
-  //대신 USER를 ?(optional)로 만들어야함
-  //Restrict: 부모 레코드가 참조되고 있는 동안은 삭제되는 걸 막음, SMSToken이 사용자와 연결되어 있으면 사용자를 못지움
-  userId     Int //SetNull 사용시 같이 ?(optional)로 만들어 줘야함
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
+  id          Int    @id @default(autoincrement())
   title       String
   price       Float
-  description String
   photo       String
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  user        USER     @relation(fields: [userId], references: [id])
-  userId      Int
+  description String
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
 }

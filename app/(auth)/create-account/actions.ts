@@ -38,7 +38,7 @@ const formSchema = z
   })
 
   .superRefine(async ({ username }, ctx) => {
-    const user = await db.uSER.findUnique({
+    const user = await db.user.findUnique({
       where: {
         username,
       },
@@ -57,7 +57,7 @@ const formSchema = z
     }
   })
   .superRefine(async ({ email }, ctx) => {
-    const user = await db.uSER.findUnique({
+    const user = await db.user.findUnique({
       where: {
         email,
       },
@@ -92,7 +92,7 @@ export async function createAccount(prevState: any, formData: FormData) {
     return result.error.flatten();
   } else {
     const hashedPassword = await bcrypt.hash(result.data.password, 12);
-    const user = await db.uSER.create({
+    const user = await db.user.create({
       data: {
         username: result.data.username,
         email: result.data.email,

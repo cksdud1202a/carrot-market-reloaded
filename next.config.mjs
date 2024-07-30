@@ -1,11 +1,17 @@
 /** @type {import('next').NextConfig} */
-import path from "path";
-
 const nextConfig = {
-  webpack: (config) => {
-    config.cache = {
-      type: "memory", // 캐시를 메모리로 설정
-    };
+  images: {
+    remotePatterns: [
+      {
+        hostname: "avatars.githubusercontent.com",
+        //next.js에게 이 URL의 이미지를 최적화하고 싶다 알림
+      },
+    ],
+  },
+  reactStrictMode: true,
+  webpack5: true,
+  webpack: (config, options) => {
+    config.cache = false;
     return config;
   },
 };
