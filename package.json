@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",
+<<<<<<< HEAD
     "@hookform/resolvers": "^3.9.0",
+=======
+>>>>>>> 4be5d5a9668ac0e1d224605741d2c0dd51a425cd
     "@prisma/client": "^5.17.0",
     "@tailwindcss/forms": "^0.5.7",
     "@types/bcrypt": "^5.0.2",
@@ -19,7 +22,10 @@
     "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18",
+<<<<<<< HEAD
     "react-hook-form": "^7.52.1",
+=======
+>>>>>>> 4be5d5a9668ac0e1d224605741d2c0dd51a425cd
     "validator": "^13.12.0",
     "zod": "^3.23.8"
   },
